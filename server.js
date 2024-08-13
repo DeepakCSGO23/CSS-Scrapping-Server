@@ -1,7 +1,7 @@
 const http=require('http')
 const postcss=require('postcss')
 const safeParser=require('postcss-safe-parser')
-const port=5500
+require("dotenv").config();
 
 // Create a HTTP server
 const server=http.createServer((req,res)=>{
@@ -20,11 +20,11 @@ const server=http.createServer((req,res)=>{
     // }
 })
 
-server.listen(port,(err)=>{
+server.listen(process.env.PORT,(err)=>{
     if(err){
         console.log("Something went wrong",err)
     }
     else{
-        console.log('Server is listening on port',port)
+        console.log('Server is listening on port',process.env.PORT)
     }
 })
