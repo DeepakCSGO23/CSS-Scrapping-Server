@@ -15,6 +15,7 @@ const server = http.createServer((req, res) => {
             try {
                 // Parsing the CSS data
                 const root = postcss.parse(body, { parser: safeParser });
+                console.log(root)
                 console.log('CSS parsed successfully');
 
                 // Example: Sending a simple response
