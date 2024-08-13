@@ -1,9 +1,9 @@
-const https = require('https');
+const http = require('http');
 const postcss = require('postcss');
 const safeParser = require('postcss-safe-parser');
 require('dotenv').config();
 
-const server = https.createServer((req, res) => {
+const server = http.createServer((req, res) => {
     res.setHeader('Access-Control-Allow-Origin', '*'); // Allows all origins
     res.setHeader('Access-Control-Allow-Methods', 'POST, GET, OPTIONS'); // Allows POST and GET methods
     res.setHeader('Access-Control-Allow-Headers', 'Content-Type'); // Allows content-type header
