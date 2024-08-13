@@ -24,14 +24,16 @@ const server = http.createServer((req, res) => {
                 const classNames = new Set();
                 root.walkRules(rule => {
                     let hasColorProperty = false;
-
+                    console.log(rule)
                     rule.walkDecls(decl => {
+                        console.log(decl)
                         if (decl.prop === 'color' || decl.prop === 'background-color') {
                             hasColorProperty = true;
                         }
                     });
 
                     if (hasColorProperty) {
+                        
                         // Extract class names from selectors
                         const selectors = rule.selector.split(',');
                         selectors.forEach(selector => {
