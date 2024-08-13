@@ -21,34 +21,33 @@ const server = http.createServer((req, res) => {
                 const root = postcss.parse(body, { parser: safeParser });
 
                 // Extracting class names with color or background-color properties
-                const classNames = new Set();
+                const classColors = new Map();
                 root.walkRules(rule => {
-                    let hasColorProperty = false;
-                    console.log(rule)
+                    let colorValue = '';
                     rule.walkDecls(decl => {
-                        console.log(decl)
                         if (decl.prop === 'color' || decl.prop === 'background-color') {
-                            hasColorProperty = true;
+                            colorValue = decl.value;
                         }
                     });
 
-                    if (hasColorProperty) {
-                        
+                    if (colorValue) {
                         // Extract class names from selectors
                         const selectors = rule.selector.split(',');
                         selectors.forEach(selector => {
                             const className = selector.trim().replace(/^\./, ''); // Remove leading dot if present
-                            classNames.add(className);
+                            if (className) {
+                                classColors.set(className, colorValue);
+                            }
                         });
                     }
                 });
 
-                // Convert Set to Array for easier handling in the response
-                const result = Array.from(classNames);
+                // Convert Map to Array for easier handling in the response
+                const result = Array.from(classColors.entries()).map(([className, color]) => ({ className, color }));
                 
-                // Send the response with the extracted class names
+                // Send the response with the extracted class names and colors
                 res.writeHead(200, { 'Content-Type': 'application/json' });
-                res.end(JSON.stringify({ classNames: result }));
+                res.end(JSON.stringify({ classColors: result }));
 
             } catch (error) {
                 console.error('Error parsing CSS:', error);
