@@ -4,6 +4,9 @@ const safeParser = require('postcss-safe-parser');
 require('dotenv').config();
 
 const server = http.createServer((req, res) => {
+    response.setHeader('Access-Control-Allow-Origin', '*');
+    response.setHeader('Access-Control-Allow-Methods', 'OPTIONS, GET');
+    response.setHeader('Access-Control-Max-Age', 2592000); 
     if (req.method === 'POST' && req.url === '/parse-css') {
         let body = '';
 
@@ -15,9 +18,6 @@ const server = http.createServer((req, res) => {
             try {
                 // Parsing the CSS data
                 const root = postcss.parse(body, { parser: safeParser });
-                console.log(root)
-                console.log('CSS parsed successfully');
-
                 // Example: Sending a simple response
                 res.writeHead(200, { 'Content-Type': 'application/json' });
                 res.end(JSON.stringify({ message: 'CSS parsed successfully' }));
