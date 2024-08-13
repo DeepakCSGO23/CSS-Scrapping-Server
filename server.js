@@ -1,12 +1,13 @@
-const http = require('http');
+const https = require('https');
 const postcss = require('postcss');
 const safeParser = require('postcss-safe-parser');
 require('dotenv').config();
 
-const server = http.createServer((req, res) => {
+const server = https.createServer((req, res) => {
     res.setHeader('Access-Control-Allow-Origin', '*'); // Allows all origins
     res.setHeader('Access-Control-Allow-Methods', 'POST, GET, OPTIONS'); // Allows POST and GET methods
     res.setHeader('Access-Control-Allow-Headers', 'Content-Type'); // Allows content-type header
+
     if (req.method === 'POST' && req.url === '/parse-css') {
         let body = '';
 
@@ -18,9 +19,35 @@ const server = http.createServer((req, res) => {
             try {
                 // Parsing the CSS data
                 const root = postcss.parse(body, { parser: safeParser });
-                // Example: Sending a simple response
+
+                // Extracting class names with color or background-color properties
+                const classNames = new Set();
+                root.walkRules(rule => {
+                    let hasColorProperty = false;
+
+                    rule.walkDecls(decl => {
+                        if (decl.prop === 'color' || decl.prop === 'background-color') {
+                            hasColorProperty = true;
+                        }
+                    });
+
+                    if (hasColorProperty) {
+                        // Extract class names from selectors
+                        const selectors = rule.selector.split(',');
+                        selectors.forEach(selector => {
+                            const className = selector.trim().replace(/^\./, ''); // Remove leading dot if present
+                            classNames.add(className);
+                        });
+                    }
+                });
+
+                // Convert Set to Array for easier handling in the response
+                const result = Array.from(classNames);
+                
+                // Send the response with the extracted class names
                 res.writeHead(200, { 'Content-Type': 'application/json' });
-                res.end(JSON.stringify({ message: 'CSS parsed successfully' }));
+                res.end(JSON.stringify({ classNames: result }));
+
             } catch (error) {
                 console.error('Error parsing CSS:', error);
                 res.writeHead(400, { 'Content-Type': 'application/json' });
@@ -33,7 +60,7 @@ const server = http.createServer((req, res) => {
     }
 });
 
-const port = process.env.PORT || 5500;
+const port = process.env.PORT;
 server.listen(port, (err) => {
     if (err) {
         console.log('Something went wrong', err);
