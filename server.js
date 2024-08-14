@@ -25,12 +25,19 @@ const server = http.createServer((req, res) => {
                 root.walkRules(rule => {
                     let colorValue = '';
                     rule.walkDecls(decl => {
-                        if (decl.prop === 'color' || decl.prop === 'background-color') {
+                        console.log(decl.value)
+                        // the css class contains both color & background-color property
+                        if (decl.prop === 'color'&&decl.prop==='background-color') {
                             colorValue = decl.value;
+                        }
+                        else if(decl.prop==='color'){
+
+                        }
+                        else if(decl.prop==='background-color'){
+
                         }
                     });
 
-                    if (colorValue) {
                         // Extract class names from selectors
                         const selectors = rule.selector.split(',');
                         selectors.forEach(selector => {
@@ -39,7 +46,7 @@ const server = http.createServer((req, res) => {
                                 classColors.set(className, colorValue);
                             }
                         });
-                    }
+                   
                 });
 
                 // Convert Map to Array for easier handling in the response
