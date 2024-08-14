@@ -57,7 +57,7 @@ const server = http.createServer((req, res) => {
                     });
                 });
                 
-
+                
                 // Convert Map to Array for easier handling in the response
                 const result = Array.from(classColors);
                 
