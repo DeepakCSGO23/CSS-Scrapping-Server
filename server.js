@@ -42,7 +42,7 @@ const server = http.createServer((req, res) => {
                     const selectors = rule.selector.split(',');
                     selectors.forEach(selector => {
                         const className = selector.trim().replace(/^\./, ''); // Remove leading dot if present
-                        if (className) {
+                        if (!className.startsWith(':')) {
                             if (colorValue && backgroundColorValue) {
                                 // Class has both color and background-color
                                 classColors.set(className, { color: colorValue, backgroundColor: backgroundColorValue });
