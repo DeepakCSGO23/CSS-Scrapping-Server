@@ -25,7 +25,7 @@ const server = http.createServer((req, res) => {
                 root.walkRules(rule => {
                     let colorValue = '';
                     rule.walkDecls(decl => {
-                        console.log(decl.value)
+                        console.log(decl,'ethu decl')
                         // the css class contains both color & background-color property
                         if (decl.prop === 'color'&&decl.prop==='background-color') {
                             colorValue = decl.value;
