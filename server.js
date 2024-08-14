@@ -24,33 +24,42 @@ const server = http.createServer((req, res) => {
                 const classColors = new Map();
                 root.walkRules(rule => {
                     let colorValue = '';
+                    let backgroundColorValue = '';
+                    
                     rule.walkDecls(decl => {
-                        console.log(decl,'ethu decl')
-                        // the css class contains both color & background-color property
-                        if (decl.prop === 'color'&&decl.prop==='background-color') {
+                        // Check if the declaration is for color
+                        if (decl.prop === 'color') {
                             colorValue = decl.value;
                         }
-                        else if(decl.prop==='color'){
-
-                        }
-                        else if(decl.prop==='background-color'){
-
+                
+                        // Check if the declaration is for background-color
+                        if (decl.prop === 'background-color') {
+                            backgroundColorValue = decl.value;
                         }
                     });
-
-                        // Extract class names from selectors
-                        const selectors = rule.selector.split(',');
-                        selectors.forEach(selector => {
-                            const className = selector.trim().replace(/^\./, ''); // Remove leading dot if present
-                            if (className) {
-                                classColors.set(className, colorValue);
+                
+                    // Extract class names from selectors
+                    const selectors = rule.selector.split(',');
+                    selectors.forEach(selector => {
+                        const className = selector.trim().replace(/^\./, ''); // Remove leading dot if present
+                        if (className) {
+                            if (colorValue && backgroundColorValue) {
+                                // Class has both color and background-color
+                                classColors.set(className, { color: colorValue, backgroundColor: backgroundColorValue });
+                            } else if (colorValue) {
+                                // Class has only color
+                                classColors.set(className, { color: colorValue });
+                            } else if (backgroundColorValue) {
+                                // Class has only background-color
+                                classColors.set(className, { backgroundColor: backgroundColorValue });
                             }
-                        });
-                   
+                        }
+                    });
                 });
+                
 
                 // Convert Map to Array for easier handling in the response
-                const result = Array.from(classColors.entries()).map(([className, color]) => ({ className, color }));
+                const result = Array.from(classColors);
                 
                 // Send the response with the extracted class names and colors
                 res.writeHead(200, { 'Content-Type': 'application/json' });
