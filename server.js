@@ -29,7 +29,7 @@ const server = http.createServer((req, res) => {
                     // 
                     rule.walkDecls(decl => {
                         // is a css variable name
-                        if(decl.prop.startsWith('--')){
+                        if(decl.prop.startsWith('--')&&(decl.prop.includes('background')||decl.prop.includes('color')||decl.prop.includes('text'))){
                             cssVariables.set(decl.prop,decl.value)
                         }
                         // Check if the declaration is for color
