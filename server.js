@@ -64,10 +64,9 @@ const server = http.createServer((req, res) => {
                 
                 // Convert Map to Array for easier handling in the response
                 const result = Array.from(classColors);
-                const cssVariablesInArray=Array.from(cssVariables)
                 // Send the response with the extracted class names and colors
                 res.writeHead(200, { 'Content-Type': 'application/json' });
-                res.end(JSON.stringify({ classColors: result,cssVariables:cssVariablesInArray }));
+                res.end(JSON.stringify({ classColors: result,cssVariables:cssVariables }));
 
             } catch (error) {
                 console.error('Error parsing CSS:', error);
