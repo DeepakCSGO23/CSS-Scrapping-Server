@@ -22,21 +22,22 @@ const server = http.createServer((req, res) => {
 
                 // Extracting class names with color or background-color properties
                 const classColors = new Map();
+                const cssVariables=new Map()
                 root.walkRules(rule => {
                     let colorValue = '';
                     let backgroundColorValue = '';
                     
                     rule.walkDecls(decl => {
-                        if(decl.prop.startsWith('--')){
-                            console.log("CSS variable",decl.prop,' its value is ',decl.value)
+                        if(decl.prop.startsWith('--')&&!decl.value.startsWith('var')){
+                            cssVariables.set(decl.prop,decl.value)
                         }
                         // Check if the declaration is for color
-                        if (decl.prop === 'color'&&decl.value!=='inherit') {
+                        if (decl.prop === 'color'&&decl.value!=='inherit'&&decl.value!=='transparent') {
                             colorValue = decl.value;
                         }
                 
                         // Check if the declaration is for background-color
-                        if (decl.prop === 'background-color'&&decl.value!=='inherit') {
+                        if (decl.prop === 'background-color'&&decl.value!=='inherit'&&decl.value!=='transparent') {
                             backgroundColorValue = decl.value;
                         }
                     });
@@ -63,10 +64,10 @@ const server = http.createServer((req, res) => {
                 
                 // Convert Map to Array for easier handling in the response
                 const result = Array.from(classColors);
-                
+                const cssVariablesInArray=Array.from(cssVariables)
                 // Send the response with the extracted class names and colors
                 res.writeHead(200, { 'Content-Type': 'application/json' });
-                res.end(JSON.stringify({ classColors: result }));
+                res.end(JSON.stringify({ classColors: result,cssVariables:cssVariablesInArray }));
 
             } catch (error) {
                 console.error('Error parsing CSS:', error);
