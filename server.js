@@ -26,9 +26,10 @@ const server = http.createServer((req, res) => {
                 root.walkRules(rule => {
                     let colorValue = '';
                     let backgroundColorValue = '';
-                    
+                    // 
                     rule.walkDecls(decl => {
-                        if(decl.prop.startsWith('--')&&!decl.value.startsWith('var')){
+                        // is a css variable name
+                        if(decl.prop.startsWith('--')){
                             cssVariables.set(decl.prop,decl.value)
                         }
                         // Check if the declaration is for color
@@ -67,7 +68,6 @@ const server = http.createServer((req, res) => {
                 // Send the response with the extracted class names and colors
                 res.writeHead(200, { 'Content-Type': 'application/json' });
                 res.end(JSON.stringify({ classColors: result,cssVariables:Array.from(cssVariables) }));
-
             } catch (error) {
                 console.error('Error parsing CSS:', error);
                 res.writeHead(400, { 'Content-Type': 'application/json' });
