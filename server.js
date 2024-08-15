@@ -28,12 +28,12 @@ const server = http.createServer((req, res) => {
                     
                     rule.walkDecls(decl => {
                         // Check if the declaration is for color
-                        if (decl.prop === 'color') {
+                        if (decl.prop === 'color'&&decl.value!=='inherit') {
                             colorValue = decl.value;
                         }
                 
                         // Check if the declaration is for background-color
-                        if (decl.prop === 'background-color') {
+                        if (decl.prop === 'background-color'&&decl.value!=='inherit') {
                             backgroundColorValue = decl.value;
                         }
                     });
