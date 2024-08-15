@@ -40,8 +40,9 @@ const server = http.createServer((req, res) => {
                 
                     // Extract class names from selectors
                     const selectors = rule.selector.split(',');
+                    console.log('selectors',selectors)
                     selectors.forEach(selector => {
-                        const className = selector.trim().replace(/^\./, ''); // Remove leading dot if present
+                        const className = selector.trim(); 
                         if (!className.includes(':')) {
                             if (colorValue && backgroundColorValue) {
                                 // Class has both color and background-color
