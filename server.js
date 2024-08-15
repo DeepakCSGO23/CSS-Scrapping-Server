@@ -27,6 +27,9 @@ const server = http.createServer((req, res) => {
                     let backgroundColorValue = '';
                     
                     rule.walkDecls(decl => {
+                        if(decl.prop.startsWith('--')){
+                            console.log("CSS variable",decl.prop,' its value is ',decl.value)
+                        }
                         // Check if the declaration is for color
                         if (decl.prop === 'color'&&decl.value!=='inherit') {
                             colorValue = decl.value;
@@ -40,7 +43,6 @@ const server = http.createServer((req, res) => {
                 
                     // Extract class names from selectors
                     const selectors = rule.selector.split(',');
-                    console.log('selectors',selectors)
                     selectors.forEach(selector => {
                         const className = selector.trim(); 
                         if (!className.includes(':')) {
