@@ -28,9 +28,9 @@ const server = http.createServer((req, res) => {
                     let backgroundColorValue = '';
                     // 
                     rule.walkDecls(decl => {
-                        // is a css variable name
-                        // Getting the root css variable name and its value
-                        if(decl.prop.startsWith('--')&&!decl.value.includes('var(')&&(decl.value.includes('#')||decl.value.includes('rgba')||decl.value.includes('rgb')||decl.value.includes('hsl'))){
+                        // for root css variable
+                        // is a css variable name which may contain nested css variables
+                        if(decl.prop.startsWith('--')&&(decl.value.includes('#')||decl.value.includes('rgba')||decl.value.includes('rgb')||decl.value.includes('hsl'))){
                             cssVariables.set(decl.prop,decl.value)
                         }
                         // Check if the declaration is for color
