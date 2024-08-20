@@ -29,10 +29,12 @@ const server = http.createServer((req, res) => {
                     // 
                     rule.walkDecls(decl => {
                         // for root css variable
-                        // is a css variable name which may contain nested css variables
-                        if(decl.prop.startsWith('--')&&(decl.value.includes('#')||decl.value.includes('rgba')||decl.value.includes('rgb')||decl.value.includes('hsl'))){
+                        if(decl.prop.startsWith('--')&&(decl.prop.startsWith("#")||decl.prop.startsWith("rgb")||decl.prop.startsWith("hsl"))){
                             cssVariables.set(decl.prop,decl.value)
                         }
+                        // if(decl.prop.startsWith('--')&&(decl.value.includes('#')||decl.value.includes('rgba')||decl.value.includes('rgb')||decl.value.includes('hsl'))){
+                        //     cssVariables.set(decl.prop,decl.value)
+                        // }
                         // Check if the declaration is for color
                         if (decl.prop === 'color'&&decl.value!=='inherit'&&decl.value!=='transparent') {
                             colorValue = decl.value;
