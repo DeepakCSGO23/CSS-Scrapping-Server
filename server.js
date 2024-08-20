@@ -29,7 +29,7 @@ const server = http.createServer((req, res) => {
                     // 
                     rule.walkDecls(decl => {
                         // for root css variable
-                        if(decl.prop.startsWith('--')&&(decl.prop.startsWith("#")||decl.prop.startsWith("rgb")||decl.prop.startsWith("hsl"))){
+                        if(decl.prop.startsWith('--')&&(decl.value.startsWith("#")||decl.value.startsWith("rgb")||decl.value.startsWith("hsl"))){
                             cssVariables.set(decl.prop,decl.value)
                         }
                         // if(decl.prop.startsWith('--')&&(decl.value.includes('#')||decl.value.includes('rgba')||decl.value.includes('rgb')||decl.value.includes('hsl'))){
