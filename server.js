@@ -28,7 +28,7 @@ const server = http.createServer((req, res) => {
                     let backgroundColorValue = '';
                     // 
                     rule.walkDecls(decl => {
-                        console.log(decl)
+                        console.log(decl.parent)
                         // for root css variable
                         if(decl.prop.startsWith('--')&&(decl.value.startsWith("#")||decl.value.startsWith("rgb")||decl.value.startsWith("hsl"))){
                             cssVariables.set(decl.prop,decl.value)
