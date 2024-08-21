@@ -80,7 +80,7 @@ const server = http.createServer((req, res) => {
                         }
                 
                         // Check if the declaration is for background-color
-                        if (decl.prop === 'background-color' && decl.value !== 'inherit' && decl.value !== 'transparent') {
+                        if ((decl.prop==='background'||decl.prop === 'background-color') && decl.value !== 'inherit' && decl.value !== 'transparent') {
                             backgroundColorValue = decl.value;
                         }
                     });
