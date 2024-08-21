@@ -3,6 +3,53 @@ const postcss = require('postcss');
 const safeParser = require('postcss-safe-parser');
 require('dotenv').config();
 
+// Function to resolve the actual value of a CSS variable
+function resolveVariable(value, variablesMap, visited = new Set()) {
+    let resolvedValue = value;
+
+    while (resolvedValue.startsWith('var(')) {
+        if (visited.has(resolvedValue)) {
+            throw new Error('Cyclic variable reference detected');
+        }
+
+        visited.add(resolvedValue);
+
+        const match = resolvedValue.match(/var\((--[^,)]+)(?:, *(.*))?\)/);
+        const variableName = match[1];
+        const fallbackValue = match[2] || '';
+
+        resolvedValue = variablesMap.get(variableName) || fallbackValue;
+    }
+
+    return resolvedValue;
+}
+
+// Function to process CSS and resolve variables
+function processCSS(css) {
+    // Parse CSS
+    const root = postcss.parse(css, { parser: safeParser });
+
+    // Step 1: Collect all CSS variables
+    const cssVariables = new Map();
+    root.walkDecls(decl => {
+        if (decl.prop.startsWith('--')) {
+            cssVariables.set(decl.prop, decl.value);
+        }
+    });
+
+    // Step 2: Walk through the rules and replace variables with actual values
+    root.walkRules(rule => {
+        rule.walkDecls(decl => {
+            if (decl.value.includes('var(')) {
+                const actualValue = resolveVariable(decl.value, cssVariables);
+                decl.value = actualValue;
+            }
+        });
+    });
+
+    return { root, cssVariables };
+}
+
 const server = http.createServer((req, res) => {
     res.setHeader('Access-Control-Allow-Origin', '*'); // Allows all origins
     res.setHeader('Access-Control-Allow-Methods', 'POST, GET, OPTIONS'); // Allows POST and GET methods
@@ -17,38 +64,29 @@ const server = http.createServer((req, res) => {
 
         req.on('end', () => {
             try {
-                // Parsing the CSS data
-                const root = postcss.parse(body, { parser: safeParser });
+                // Process the CSS data
+                const { root, cssVariables } = processCSS(body);
 
                 // Extracting class names with color or background-color properties
                 const classColors = new Map();
-                const cssVariables=new Map()
                 root.walkRules(rule => {
                     let colorValue = '';
                     let backgroundColorValue = '';
-                    // 
+                    
                     rule.walkDecls(decl => {
-                        // for root css variable
-                        if(decl.prop.startsWith('--')&&(decl.value.startsWith("#")||decl.value.startsWith("rgb")||decl.value.startsWith("hsl"))){
-                            cssVariables.set(decl.prop,decl.value)
-                        }
-                        // if(decl.prop.startsWith('--')&&(decl.value.includes('#')||decl.value.includes('rgba')||decl.value.includes('rgb')||decl.value.includes('hsl'))){
-                        //     cssVariables.set(decl.prop,decl.value)
-                        // }
                         // Check if the declaration is for color
-                        if (decl.prop === 'color'&&decl.value!=='inherit'&&decl.value!=='transparent') {
+                        if (decl.prop === 'color' && decl.value !== 'inherit' && decl.value !== 'transparent') {
                             colorValue = decl.value;
                         }
                 
                         // Check if the declaration is for background-color
-                        if (decl.prop === 'background-color'&&decl.value!=='inherit'&&decl.value!=='transparent') {
+                        if (decl.prop === 'background-color' && decl.value !== 'inherit' && decl.value !== 'transparent') {
                             backgroundColorValue = decl.value;
                         }
                     });
                 
                     // Extract class names from selectors
                     const selectors = rule.selector.split(',');
-                    console.log(selectors)
                     selectors.forEach(selector => {
                         const className = selector.trim(); 
                         if (!className.includes(':')) {
@@ -65,13 +103,12 @@ const server = http.createServer((req, res) => {
                         }
                     });
                 });
-                
-                
+
                 // Convert Map to Array for easier handling in the response
                 const result = Array.from(classColors);
                 // Send the response with the extracted class names and colors
                 res.writeHead(200, { 'Content-Type': 'application/json' });
-                res.end(JSON.stringify({ classColors: result,cssVariables:Array.from(cssVariables) }));
+                res.end(JSON.stringify({ classColors: result, cssVariables: Array.from(cssVariables) }));
             } catch (error) {
                 console.error('Error parsing CSS:', error);
                 res.writeHead(400, { 'Content-Type': 'application/json' });
@@ -84,7 +121,7 @@ const server = http.createServer((req, res) => {
     }
 });
 
-const port = process.env.PORT;
+const port = process.env.PORT || 3000; // Default to port 3000 if not specified
 server.listen(port, (err) => {
     if (err) {
         console.log('Something went wrong', err);
