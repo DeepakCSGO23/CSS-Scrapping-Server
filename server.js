@@ -108,7 +108,7 @@ const server = http.createServer((req, res) => {
         req.on('end', () => {
             try {
                 // Process the CSS data
-                const { root, cssVariables, classColors } = processCSS(body);
+                const { root, cssVariables, classColors } = processCSS(body,{ parser: safeParser });
 
                 // Convert Map to Array for easier handling in the response
                 const result = Array.from(classColors);
