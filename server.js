@@ -127,7 +127,7 @@ const server = http.createServer((req, res) => {
     // a endpoint so that we can ping here
     else if(req.method=='GET'&&req.url==='/health'){
         res.writeHead(200,{'Content-Type':'text/plain'})
-        res.send('Server is up and running')
+        res.end('Server is up and running')
     }
     else {
         res.writeHead(404, { 'Content-Type': 'text/plain' });
