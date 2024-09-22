@@ -5,10 +5,7 @@ const cors = require('cors');
 const express = require('express');
 const fs = require('fs');
 require('dotenv').config();
-// Load SSL/TLS certificates
-const privateKey = fs.readFileSync('server.key');
-const certificate = fs.readFileSync('server.cert');
-const credentials = { key: privateKey, cert: certificate };
+
 // Initialize Express app
 const app = express();
 
@@ -126,6 +123,6 @@ app.get('/health', (req, res) => {
 
 // Start the server
 const port = process.env.PORT || 3000; // Default to port 3000 if not specified
-https.createServer(credentials, app).listen(port, () => {
+https.createServer(app).listen(port, () => {
     console.log(`HTTPS Server is listening on port ${port}`);
 });
