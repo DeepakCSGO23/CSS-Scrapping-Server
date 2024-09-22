@@ -1,9 +1,7 @@
 const postcss = require('postcss');
 const safeParser = require('postcss-safe-parser');
-const https = require('https');
 const cors = require('cors');
 const express = require('express');
-const fs = require('fs');
 require('dotenv').config();
 
 // Initialize Express app
@@ -123,6 +121,6 @@ app.get('/health', (req, res) => {
 
 // Start the server
 const port = process.env.PORT || 3000; // Default to port 3000 if not specified
-https.createServer(app).listen(port, () => {
+app.listen(port, () => {
     console.log(`HTTPS Server is listening on port ${port}`);
 });
