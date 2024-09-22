@@ -1,26 +1,37 @@
-const http = require('http');
 const postcss = require('postcss');
 const safeParser = require('postcss-safe-parser');
+const https = require('https');
+const cors = require('cors');
+const express = require('express');
+const fs = require('fs');
 require('dotenv').config();
+// Load SSL/TLS certificates
+const privateKey = fs.readFileSync('server.key');
+const certificate = fs.readFileSync('server.cert');
+const credentials = { key: privateKey, cert: certificate };
+// Initialize Express app
+const app = express();
+
+// Use CORS middleware
+app.use(cors());
+
+// Middleware to parse JSON bodies
+app.use(express.json({ limit: '10mb' }));
+app.use(express.text({ limit: '10mb' }));
 
 // Function to resolve the actual value of a CSS variable
 function resolveVariable(value, variablesMap, visited = new Set()) {
     let resolvedValue = value;
-
     while (resolvedValue.startsWith('var(')) {
         if (visited.has(resolvedValue)) {
             throw new Error('Cyclic variable reference detected');
         }
-
         visited.add(resolvedValue);
-
         const match = resolvedValue.match(/var\((--[^,)]+)(?:, *(.*))?\)/);
         const variableName = match[1];
         const fallbackValue = match[2] || '';
-
         resolvedValue = variablesMap.get(variableName) || fallbackValue;
     }
-
     return resolvedValue;
 }
 
@@ -68,7 +79,7 @@ function processCSS(css) {
             }
 
             // Check if the declaration is for background-color
-            if ((decl.prop==='background'||decl.prop === 'background-color') && decl.value !== 'inherit' && decl.value !== 'transparent') {
+            if ((decl.prop === 'background' || decl.prop === 'background-color') && decl.value !== 'inherit' && decl.value !== 'transparent') {
                 backgroundColorValue = decl.value;
             }
         });
@@ -93,53 +104,28 @@ function processCSS(css) {
     return { root, cssVariables, classColors };
 }
 
-const server = http.createServer((req, res) => {
-    res.setHeader('Access-Control-Allow-Origin', '*'); // Allows all origins
-    res.setHeader('Access-Control-Allow-Methods', 'POST, GET, OPTIONS'); // Allows POST and GET methods
-    res.setHeader('Access-Control-Allow-Headers', 'Content-Type'); // Allows content-type header
-
-    if (req.method === 'POST' && req.url === '/parse-css') {
-        let body = '';
-
-        req.on('data', (chunk) => {
-            body += chunk.toString();
-        });
-
-        req.on('end', () => {
-            try {
-                // Process the CSS data
-                const { root, cssVariables, classColors } = processCSS(body,{ parser: safeParser });
-
-                // Convert Map to Array for easier handling in the response
-                const result = Array.from(classColors);
-                console.log('Final Result:', JSON.stringify({ classColors: result, cssVariables: Array.from(cssVariables) }, null, 2)); // Log the final output
-
-                // Send the response with the extracted class names and colors
-                res.writeHead(200, { 'Content-Type': 'application/json' });
-                res.end(JSON.stringify({ classColors: result, cssVariables: Array.from(cssVariables) }));
-            } catch (error) {
-                console.error('Error parsing CSS:', error); // Log the error details
-                res.writeHead(400, { 'Content-Type': 'application/json' });
-                res.end(JSON.stringify({ error: 'Failed to parse CSS' }));
-            }
-        });
-    }
-    // a endpoint so that we can ping here
-    else if(req.method=='GET'&&req.url==='/health'){
-        res.writeHead(200,{'Content-Type':'text/plain'})
-        res.end('Server is up and running')
-    }
-    else {
-        res.writeHead(404, { 'Content-Type': 'text/plain' });
-        res.end('Not Found');
+// Define routes
+app.post('/parse-css', (req, res) => {
+    try {
+        // Process the CSS data
+        const { root, cssVariables, classColors } = processCSS(req.body);
+        // Convert Map to Array for easier handling in the response
+        const result = Array.from(classColors);
+        console.log('Final Result:', JSON.stringify({ classColors: result, cssVariables: Array.from(cssVariables) }, null, 2)); // Log the final output
+        // Send the response with the extracted class names and colors
+        res.status(200).json({ classColors: result, cssVariables: Array.from(cssVariables) });
+    } catch (error) {
+        console.error('Error parsing CSS:', error); // Log the error details
+        res.status(400).json({ error: 'Failed to parse CSS' });
     }
 });
 
+app.get('/health', (req, res) => {
+    res.status(200).send('Server is up and running');
+});
+
+// Start the server
 const port = process.env.PORT || 3000; // Default to port 3000 if not specified
-server.listen(port, (err) => {
-    if (err) {
-        console.log('Something went wrong', err);
-    } else {
-        console.log('Server is listening on port', port);
-    }
+https.createServer(credentials, app).listen(port, () => {
+    console.log(`HTTPS Server is listening on port ${port}`);
 });
